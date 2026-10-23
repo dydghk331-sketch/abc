@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아두이노 신호등 프로젝트 대화 정리</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#dfe5ee;--blue:#2563eb;--green:#16a34a;--yellow:#d97706;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}.wrap{max-width:980px;margin:auto;padding:36px 18px 64px}.hero{background:linear-gradient(135deg,#16213e,#2563eb);color:white;padding:34px;border-radius:24px;margin-bottom:22px}.hero h1{margin:0 0 10px;font-size:30px;line-height:1.25}.hero p{margin:0;color:#dbeafe}.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.badge{padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);font-size:13px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;margin:18px 0;box-shadow:0 8px 24px rgba(15,23,42,.04)}h2{font-size:21px;margin:0 0 14px}h3{font-size:17px;margin:20px 0 8px}p{margin:8px 0}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f8fafc}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-weight:700;margin:15px 0 5px}.step{padding:10px 14px;border:1px solid var(--line);border-radius:12px}.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}.arrow{color:#98a2b3}.callout{border-left:4px solid var(--blue);background:#eff6ff;padding:14px 16px;border-radius:0 12px 12px 0;margin:14px 0}.warn{border-left-color:var(--yellow);background:#fff7ed}.timeline{border-left:2px solid #dbe3ef;margin:16px 0 0 8px;padding-left:20px}.item{position:relative;margin:0 0 18px}.item:before{content:"";position:absolute;left:-26px;top:7px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px #e8efff}.item strong{display:block}.mini{font-size:13px;color:var(--muted)}pre{background:#0f172a;color:#e5e7eb;border-radius:14px;padding:18px;overflow:auto;font:13px/1.55 Consolas,monospace}.wiring{background:#0b1220;color:#e5e7eb;border-radius:14px;padding:18px;white-space:pre-wrap;font-family:Consolas,monospace}.footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}@media(max-width:600px){.hero{padding:24px}.hero h1{font-size:25px}.card{padding:18px}th,td{font-size:13px;padding:9px 7px}}
+</style>
+</head>
+<body><div class="wrap">
+<section class="hero"><h1>아두이노 신호등 + 4핀 버튼 + 부저 프로젝트</h1><p>이 채팅에서 함께 진행한 배선, 코드, 문제 해결, 부저 패턴 실험 내용을 한 문서로 정리한 기록.</p><div class="badges"><span class="badge">Arduino UNO</span><span class="badge">신호등 모듈</span><span class="badge">4핀 푸시버튼</span><span class="badge">부저</span><span class="badge">브레드보드</span></div></section>
+
+<section class="card"><h2>1. 프로젝트 목표</h2><p>처음 목표는 <strong>버튼을 누르면 신호등 상태가 바뀌는 장치</strong>를 만드는 것이었다. 사진을 보면서 실제 부품을 확인했고, 최종적으로 다음 동작을 구현했다.</p><div class="flow"><span class="step green">🟢 초록 계속</span><span class="arrow">→ 버튼 누름 →</span><span class="step yellow">🟡 노랑 3초</span><span class="arrow">→</span><span class="step red">🔴 빨강 10초 + 부저</span><span class="arrow">→</span><span class="step green">🟢 다시 초록</span></div></section>
+
+<section class="card"><h2>2. 사용 부품</h2><table><thead><tr><th>부품</th><th>역할</th></tr></thead><tbody><tr><td>Arduino UNO</td><td>입력과 출력 제어</td></tr><tr><td>4핀 신호등 모듈</td><td>초록(G), 노랑(Y), 빨강(R), GND</td></tr><tr><td>4핀 푸시버튼</td><td>신호 변경 입력</td></tr><tr><td>부저</td><td>빨간불 동안 경고음/비트 출력</td></tr><tr><td>브레드보드·점퍼선</td><td>회로 연결</td></tr></tbody></table></section>
+
+<section class="card"><h2>3. D2가 무엇인지 확인</h2><p>대화 중 <strong>D2가 무엇인지</strong> 질문했고, Arduino UNO의 <strong>Digital Pin 2</strong>, 즉 보드에 숫자 2라고 적힌 디지털 핀이라는 점을 확인했다.</p><div class="callout"><strong>D2 = 디지털 2번 핀</strong>. 같은 방식으로 D8은 8번, D10은 10번 핀이다.</div></section>
+
+<section class="card"><h2>4. 스위치 확인과 수정 과정</h2><div class="timeline"><div class="item"><strong>초기 판단</strong><span class="mini">처음 사진만 보고 COM / NO / NC 방식의 3단자 스위치로 설명했다.</span></div><div class="item"><strong>추가 사진 확인</strong><span class="mini">실제 부품은 4핀 푸시버튼이라는 점을 확인했다.</span></div><div class="item"><strong>최종 정리</strong><span class="mini">4핀 중 서로 반대쪽에 있는 핀 2개만 사용하고 나머지 2개는 사용하지 않아도 된다.</span></div></div><div class="callout warn">4핀 버튼은 보통 같은 쪽 두 핀이 내부적으로 연결되어 있다. 따라서 <strong>한쪽 그룹의 핀 1개 + 반대쪽 그룹의 핀 1개</strong>를 사용해야 버튼을 눌렀을 때 입력이 바뀐다.</div></section>
+
+<section class="card"><h2>5. 최종 배선</h2><table><thead><tr><th>부품 단자</th><th>Arduino 연결</th></tr></thead><tbody><tr><td>신호등 G</td><td><strong>D10</strong></td></tr><tr><td>신호등 Y</td><td><strong>D9</strong></td></tr><tr><td>신호등 R</td><td><strong>D8</strong></td></tr><tr><td>신호등 GND</td><td><strong>GND</strong></td></tr><tr><td>버튼 한쪽 핀</td><td><strong>D2</strong></td></tr><tr><td>버튼 반대쪽 핀</td><td><strong>GND</strong></td></tr><tr><td>버튼 나머지 2핀</td><td>사용 안 함</td></tr><tr><td>부저 +</td><td><strong>D7</strong></td></tr><tr><td>부저 -</td><td><strong>GND</strong></td></tr></tbody></table><h3>배선 요약</h3><div class="wiring">신호등 G   → 10번
+신호등 Y   → 9번
+신호등 R   → 8번
+신호등 GND → GND
+
+4핀 버튼 한쪽     → 2번
+4핀 버튼 반대쪽   → GND
+나머지 2핀         → 연결 X
+
+부저 + → 7번
+부저 - → GND</div></section>
+
+<section class="card"><h2>6. 신호등 기본 코드</h2><p>버튼을 누르면 <strong>노랑 3초 → 빨강 10초 → 다시 초록</strong>으로 돌아오는 구조를 만들었다.</p><pre><code>const int greenLED = 10;
+const int yellowLED = 9;
+const int redLED = 8;
+const int buttonPin = 2;
+
+void setup() {
+  pinMode(greenLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+
+  digitalWrite(greenLED, HIGH);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+}
+
+void loop() {
+  if (digitalRead(buttonPin) == LOW) {
+    digitalWrite(greenLED, LOW);
+
+    digitalWrite(yellowLED, HIGH);
+    delay(3000);
+    digitalWrite(yellowLED, LOW);
+
+    digitalWrite(redLED, HIGH);
+    delay(10000);
+    digitalWrite(redLED, LOW);
+
+    digitalWrite(greenLED, HIGH);
+
+    while (digitalRead(buttonPin) == LOW) {}
+    delay(100);
+  }
+}</code></pre></section>
+
+<section class="card"><h2>7. 초록불이 안 켜졌던 문제</h2><p>초록불이 켜지지 않는 상황이 있어, 코드 문제인지 배선 문제인지 분리해서 확인하기 위해 각 색을 2초씩 켜는 테스트 코드를 사용했다.</p><pre><code>void loop() {
+  digitalWrite(greenLED, HIGH);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+  delay(2000);
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, HIGH);
+  digitalWrite(redLED, LOW);
+  delay(2000);
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, HIGH);
+  delay(2000);
+}</code></pre><p><strong>결과:</strong> 이후 정상 작동을 확인했다.</p></section>
+
+<section class="card"><h2>8. 빨간불에 부저 추가</h2><p>빨간불이 켜져 있는 10초 동안 부저가 소리 나도록 확장했다. 부저의 +는 <strong>D7</strong>, -는 <strong>GND</strong>로 연결했다.</p><p>처음에는 단순한 빠른 삐삐삐 반복음으로 시작했고, 이후 리듬을 묶거나 더 빠르게 만들고, 응원가나 게임 비트처럼 들리게 만드는 방향으로 발전시켰다.</p></section>
+
+<section class="card"><h2>9. 부저 패턴 실험</h2><div class="timeline"><div class="item"><strong>단순 반복음</strong><span class="mini">빨간불 10초 동안 일정한 간격으로 삐삐삐삐 반복.</span></div><div class="item"><strong>묶음 리듬</strong><span class="mini">삐삐삐 / 삐삐삐 / 삐삐삐삐 / 삐삐삐 형태.</span></div><div class="item"><strong>초고속 반복</strong><span class="mini">약 60ms 소리 + 40ms 무음으로 빠른 경고음 구현.</span></div><div class="item"><strong>야구 응원가 느낌</strong><span class="mini">NC 다이노스 블레인 응원가처럼 긴 음 + 짧은 반복음 구조를 시도.</span></div><div class="item"><strong>유명 비트 방향</strong><span class="mini">마리오 같은 게임풍 비트나 사람들이 바로 알아챌 만한 짧은 리듬을 원했고, '빠빠빠밤' 같은 비트도 예시로 실험했다.</span></div></div></section>
+
+<section class="card"><h2>10. 현재 기준 통합 코드 예시</h2><p>아래 코드는 지금까지의 회로를 한 번에 실행할 수 있는 기본 통합형이다. 빨간불 동안 짧은 비트가 반복된다.</p><pre><code>const int greenLED = 10;
+const int yellowLED = 9;
+const int redLED = 8;
+const int buzzer = 7;
+const int buttonPin = 2;
+
+void setup() {
+  pinMode(greenLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+
+  digitalWrite(greenLED, HIGH);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+}
+
+void loop() {
+  if (digitalRead(buttonPin) == LOW) {
+    digitalWrite(greenLED, LOW);
+
+    digitalWrite(yellowLED, HIGH);
+    delay(3000);
+    digitalWrite(yellowLED, LOW);
+
+    digitalWrite(redLED, HIGH);
+    unsigned long startTime = millis();
+
+    while (millis() - startTime &lt; 10000) {
+      tone(buzzer, 900); delay(120); noTone(buzzer); delay(130);
+      tone(buzzer, 900); delay(120); noTone(buzzer); delay(130);
+      tone(buzzer, 1500); delay(300); noTone(buzzer); delay(300);
+    }
+
+    noTone(buzzer);
+    digitalWrite(redLED, LOW);
+    digitalWrite(greenLED, HIGH);
+
+    while (digitalRead(buttonPin) == LOW) {}
+    delay(100);
+  }
+}</code></pre></section>
+
+<section class="card"><h2>11. 핵심 요약</h2><ul><li>신호등은 <strong>G=10, Y=9, R=8</strong>.</li><li>4핀 버튼은 서로 반대쪽 핀 2개를 사용해 <strong>D2와 GND</strong>에 연결.</li><li><strong>INPUT_PULLUP</strong> 사용으로 버튼을 누르면 입력이 LOW가 된다.</li><li>초기 상태는 초록불.</li><li>버튼 입력 후 노랑 3초 → 빨강 10초 → 다시 초록.</li><li>빨간불 동안 부저(D7)에서 원하는 리듬 출력 가능.</li><li>현재 원하는 발전 방향은 마리오 같은 <strong>알아듣기 쉬운 8비트/유명 비트 느낌</strong>.</li></ul></section>
+
+<div class="footer">ChatGPT 대화 기반 프로젝트 정리 · 2026-10-23</div>
+</div></body></html>
